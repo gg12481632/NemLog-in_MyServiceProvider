@@ -1,0 +1,310 @@
+Net SAML2 Service Provider Framework.docx
+From document above:
+6.1 Creating your own service provider web site
+
+(A) Create a new web project in Visual Studio.
+(B) In the solution, include the Saml2 project containing the framework
+Project dk.nita.saml20
+Project dk.nita.saml20.ext.audit.log4net
+Project dk.nita.saml20.ext.audit.log4net
+(C) Copy the three ashx handlers from the demo project to the solution
+
+login.ashx
+logout.ashx
+metadata.ashx
+Copy LogAction.cs to project root and rename namespace to <MySP01>
+Copy directory "idp-metadata" to project root
+
+
+(D) Setup web.config:
+Merge web.config for new project with web.config from OIOSAMP:
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<configSections>
+		<section name="Federation" type="dk.nita.saml20.config.ConfigurationReader, dk.nita.saml20" />
+		<section name="SAML20Federation" type="dk.nita.saml20.config.ConfigurationReader, dk.nita.saml20"/>
+		<section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler,Log4net" requirePermission="false"/>
+	</configSections>
+	<connectionStrings>
+		<add name="oiosaml:SqlServerSessionStoreProvider" connectionString="server=(localdb)\MSSQLLocalDB;database=OIOSAML;Integrated Security=SSPI" providerName="System.Data.SqlClient"/>
+	</connectionStrings>
+
+	<appSettings>
+		<add key="webpages:Version" value="3.0.0.0"/>			<!-- NEW PROJECT -->
+		<add key="webpages:Enabled" value="false"/>				<!-- NEW PROJECT -->
+		<add key="ClientValidationEnabled" value="true"/>		<!-- NEW PROJECT -->
+		<add key="UnobtrusiveJavaScriptEnabled" value="true"/>	<!-- NEW PROJECT -->
+		<!--
+	</appSettings>
+	<appSettings>
+-->
+		<add key="oiosaml:SqlServerSessionStoreProvider:CleanupIntervalSeconds" value="60"/>
+		<add key="oiosaml:SqlServerSessionStoreProvider:DisableCleanup" value="false"/>
+		<add key="oiosaml:SqlServerSessionStoreProvider:Schema" value="dbo"/>
+	</appSettings>
+
+
+	<log4net>
+		<root>
+			<level value="All"/>
+			<appender-ref ref="LogFileAppender"/>
+		</root>
+		<appender name="LogFileAppender" type="log4net.Appender.RollingFileAppender">
+			<param name="File" value="C:\temp\log.txt"/>
+			<param name="AppendToFile" value="true"/>
+			<rollingStyle value="Size"/>
+			<maxSizeRollBackups value="10"/>
+			<maximumFileSize value="10MB"/>
+			<staticLogFileName value="true"/>
+			<layout type="log4net.Layout.PatternLayout">
+				<param name="ConversionPattern" value="%-5p%d{yyyy-MM-dd HH:mm:ss}-%m%n"/>
+			</layout>
+		</appender>
+	</log4net>
+
+	<location path="Home/Contact">
+		<system.web>
+			<authorization>
+				<deny users="?"/>
+			</authorization>
+		</system.web>
+	</location>
+
+
+	<Federation auditLoggingType="dk.nita.saml20.Logging.Log4NetAuditLogger, dk.nita.saml20.ext.audit.log4net" sessionType="dk.nita.saml20.Session.InProcSessionStoreProvider, dk.nita.saml20" xmlns="urn:dk.nita.saml20.configuration">
+		<SessionTimeout>30</SessionTimeout>
+		<AllowedClockSkewMinutes>3</AllowedClockSkewMinutes>
+		<PreventOpenRedirectAttack>true</PreventOpenRedirectAttack>
+		<SigningCertificate findValue="0E6DBCC6EFAAFF72E3F3D824E536381B26DEECF5" storeLocation="LocalMachine" storeName="My" x509FindType="FindByThumbprint"/>
+		<MetaDataShaHashingAlgorithm>SHA256</MetaDataShaHashingAlgorithm>
+		<AllowedAudienceUris>
+			<Audience>https://saml.oiosaml-net.dk</Audience>
+		</AllowedAudienceUris>
+		<Actions>
+			<clear/>
+			<add name="SetSamlPrincipal" type="dk.nita.saml20.Actions.SamlPrincipalAction, dk.nita.saml20 "/>
+			<add name="LogAction" type="MySP01.LogAction, MySP01"/> <!-- CHANGED -->
+			<add name="Redirect" type="dk.nita.saml20.Actions.RedirectAction, dk.nita.saml20"/>
+		</Actions>
+	</Federation>
+
+
+
+	<SAML20Federation xmlns="urn:dk.nita.saml20.configuration">
+		<MinimumAssuranceLevel>3</MinimumAssuranceLevel>
+		<ShowError>true</ShowError>
+		<ServiceProvider id="https://saml.oiosaml-net.dk" server="https://oiosaml-net.dk:20002">
+			<ServiceEndpoint localpath="/login.ashx" type="signon" redirectUrl="/Contact?action=sso" index="0"/> <!-- CHANGED -->
+			<ServiceEndpoint localpath="/logout.ashx" type="logout" redirectUrl="/About" index="1"/> <!-- CHANGED -->
+			<ServiceEndpoint localpath="/logout.ashx" type="soaplogout" errorBehaviour="throwexception"/>
+			<ServiceEndpoint localpath="/metadata.ashx" type="metadata"/>
+			<md:ContactPerson contactType="administrative" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
+				<md:Company>Schultz</md:Company>
+				<md:GivenName>Kasper</md:GivenName>
+				<md:SurName>Møller</md:SurName>
+				<md:EmailAddress>kvm@schultz.dk</md:EmailAddress>
+				<md:TelephoneNumber>4</md:TelephoneNumber>
+			</md:ContactPerson>
+		</ServiceProvider>
+		<RequestedAttributes>
+			<!-- The attributes that the demonstration identity provider issues. -->
+			<att name="urn:oid:2.5.4.4" isRequired="true"/>
+			<att name="urn:oid:2.5.4.3" isRequired="true"/>
+			<att name="urn:oid:0.9.2342.19200300.100.1.1" isRequired="true"/>
+			<att name="urn:oid:0.9.2342.19200300.100.1.3" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:AssuranceLevel" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:SpecVer" isRequired="true"/>
+			<att name="urn:oid:2.5.4.5" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:IsYouthCert" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:UniqueAccountKey" isRequired="false"/>
+			<att name="dk:gov:saml:attribute:CvrNumberIdentifier" isRequired="false"/>
+			<att name="urn:oid:2.5.4.10" isRequired="false"/>
+			<att name="urn:oid:2.5.4.65" isRequired="false"/>
+			<att name="urn:oid:1.3.6.1.4.1.1466.115.121.1.8" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:PidNumberIdentifier" isRequired="false"/>
+			<att name="dk:gov:saml:attribute:RidNumberIdentifier" isRequired="false"/>
+			<att name="urn:oid:2.5.29.29" isRequired="true"/>
+			<att name="dk:gov:saml:attribute:UserAdministratorIndicator" isRequired="false"/>
+		</RequestedAttributes>
+		<NameIdFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName</NameIdFormat>
+		<IDPEndPoints metadata="idp-metadata">
+			<add id="https://saml.test-nemlog-in.dk/" ShaHashingAlgorithm="SHA256">
+				<CertificateValidation>
+					<add type="dk.nita.saml20.Specification.DefaultCertificateSpecification, dk.nita.saml20"/>
+				</CertificateValidation>
+			</add>
+			<add id="https://oiosaml-demoidp.dk:20001/" ShaHashingAlgorithm="SHA512" default="true"/>
+		</IDPEndPoints>
+		<CommonDomain enabled="false" localReaderEndpoint="https://pfs04/demo/cdcreader.ashx"/>
+	</SAML20Federation>
+
+
+
+
+
+
+
+
+	<system.web>
+		<authentication mode="Forms">
+			<forms cookieless="UseCookies" loginUrl="/login.ashx" name="MySP01" timeout="30"/>
+		</authentication>
+		<sessionState mode="Off"/>
+
+
+
+
+
+
+		<compilation debug="true" targetFramework="4.7.2"/>
+		<httpRuntime targetFramework="4.7.2"/>
+	</system.web>
+	<runtime>
+		...
+	</runtime>
+
+	...
+</configuration>
+
+
+
+Installation
+------------
+
+Hvordan skabes public key xml filer i?
+d:\Investigation\nemlogin\OIOSAML.Net\src\dk.nita.saml20\MySP01\idp-metadata\
+
+
+
+Elavated powershell
+
+d:\Investigation\nemlogin\OIOSAML.Net\setup\
+.\setup_sp_anysoft_dk.ps1
+
+
+MySP01 properties, Start URL:
+
+https://oiosaml-net.dk:20002
+=>
+https://sp.anysoft.dk:20002
+
+
+web.config   Search-Replace oiosaml-net.dk->anysoft.dk
+<ServiceProvider id="https://saml.anysoft.dk" server="https://sp.anysoft.dk:20002">
+
+https://sp.anysoft.dk:20002/metadata.ashx
+=>
+metadata (3).xml
+
+Upload metadata fil til id provider.
+
+Test lokalt og opserver at det fungerer.
+
+Publish service provider:
+5>Web App was published successfully file:///
+D:/Investigation/nemlogin/OIOSAML.Net/src/dk.nita.saml20/MySP01/bin/app.publish/
+
+
+
+
+
+$Right="ReadAndExecute"
+$Principal = "IIS_IUSRS"
+$StartingDir = "C:\inetpub\SPAnysoftDk"
+
+foreach ($file in $(Get-ChildItem $StartingDir -recurse)) {
+	$rule=new-object `
+    System.Security.AccessControl.FileSystemAccessRule($Principal,$Right,"Allow")
+    
+    $acl=Get-Acl $file.FullName
+
+    Write-Output $file.FullName
+
+    $acl.SetAccessRule($rule)
+
+    Set-Acl $File.Fullname $acl
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+D:\Investigation\nemlogin\OIOSAML.Net\src\dk.nita.saml20\dk.nita.saml20\Protocol\Saml20SignonHandler.cs
+line217: Saml20AuthnRequest authnRequest = Saml20AuthnRequest.GetDefault();
+
+line709: context.Response.Redirect(s, true);
+
+
+https://oiosaml-demoidp.dk:20001/SignonForm.aspx?SAMLRequest=lZLNasMwEITvhb6D0D2WLMu1I%2byE0FwCLZQk9NCbsJRG1JYSrxzy%2bJXy05ZCA71qNDPfLltNj12LDroH42yN04Ti6eT%2brtqnYjb4rV3q%2faDBo8W8xkbllJcPTDVFlo85ZVnJxyVnmdKsaTapKjF6vSaxkIQWAINeWPDS%2bvBEGR3RYkT5OmUiHwteJKwo84ynbxjNQ42x0p%2fcW%2b93IAhxxoHs2pHSnTNql6gPwSilKVmZd%2btsImF7jDUvEsAcdI03sgWNURjKgtinNR56K5wEA8LKToPwjVjNnp9E4BO73nnXuBaHiRGqTrT92XvbGNp0H0nx5EoaMZMrrtU%2boFbknHhOf3RWmeiBfzZEd%2fDPBmW0bfQy7Kk3TdQu0g%2fxNs7Xr0sk%2bSuzIt%2b08RrIr3OYfAI%3d&SigAlg=http%3a%2f%2fwww.w3.org%2f2001%2f04%2fxmldsig-more%23rsa-sha512&Signature=UxJOUbdNZ4C10QcumGrV7dNDpQLXZKxig6SdPs5ijjN1qW3lmwFb3t%2fu1EZwjDcpH1I5f%2ftw3Qyra7mDHZwIWmTHZvPPTivBIVhtekuSaevwOC6sayxy0tJS2SzEOCYy%2bIkRLLDgl%2f9Fh0e7Fx%2fJtI4eVNwgdsryf87v1L8JrMWf3unqYkNvIY1UKoQ250fFAru7VwJbq1moBLOYHykaIvPLCxtjv9ASiiy0Cv2OK7J1KzymlhO4hFDLWr8e7e0LRpQhBBr7PcJ784uO0hOhnBTy3yt369kpa%2bju0%2fGU8ApBw5SieyjBwCYFXbsm2A9W9M4lgpVBFH8A%2fqsgrlQB9Q%3d%3d
+
+
+line92: HandleResponse(context);
+
+line376: <?xml version=\"1.0\"?>\r\n<q1:Response InResponseTo=\"id504862dc735940238498423de2ccf1d8\" Destination=\"https://oiosaml-net.dk:20002/login.ashx\" xmlns:q1=\"urn:oasis:names:tc:SAML:2.0:protocol\">\r\n  <q1:Status>\r\n    <q1:StatusCode Value=\"urn:oasis:names:tc:SAML:2.0:status:Success\" />\r\n  </q1:Status>\r\n  <Assertion Version=\"2.0\" ID=\"id0dd67986c42841baad49d69e6a601e12\" IssueInstant=\"2020-07-04T13:14:02.7064192Z\" xmlns=\"urn:oasis:names:tc:SAML:2.0:assertion\">\r\n    <Issuer>https://oiosaml-demoidp.dk:20001/</Issuer><Signature xmlns=\"http://www.w3.org/2000/09/xmldsig#\"><SignedInfo><CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\" /><SignatureMethod Algorithm=\"http://www.w3.org/2001/04/xmldsig-more#rsa-sha256\" /><Reference URI=\"#id0dd67986c42841baad49d69e6a601e12\"><Transforms><Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\" /><Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\" /></Transforms><DigestMethod Algorithm=\"http://www.w3.org/2001/04/xmlenc#sha256\" /><DigestValue>/A6mETJCKnHLDSNNI521Gj6vGCGfMB05Xu0GuKi0m70=</DigestValue></Reference></SignedInfo><SignatureValue>nJ3tx1ryA+7Faw/nj7zGRwMnP/mqy5L8Pb/BA3lQqKPPTbwz/NqmNzdpK07FEWm6XPA0FCeZnHW2B7krUOY89RLuXzKuoDL4D6UAmaEHWDrNVId0jJiFhsDJXt50Kdl1BpNEYjc/Ge2xgKCq671qdaYn6sVFui43oql58npCQnU98aZLxz+S8C0nMZ9v8x0DaBjk7hWMkBaXRY4/tx7Cx50axYdz8KAxpuOtE+GlfggrbQfrpKo6eUhhlK4Rgsw3Z7MUrtZR2iRaG3yTUMr5oUmIoulGOhIYxHFXZZb37a51wbp8V18zAsc3TIC5qy/eYtm2UYxsx3DoFWmVOV1lbQ==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDGDCCAgCgAwIBAgIQYGHojnAZgq5BNkH4XckFdjANBgkqhkiG9w0BAQUFADAfMR0wGwYDVQQDDBRvaW9zYW1sIHRlc3QgZGVtb2lkcDAeFw0xNzA4MDIwOTEzMzhaFw0yOTEyMzEyMjAwMDBaMB8xHTAbBgNVBAMMFG9pb3NhbWwgdGVzdCBkZW1vaWRwMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr9tL9VNsfnRX6GYRwKqt0ZxN66kLwy3YEsz5bKRoLpPdXmdvYh+4rC4U4JvgOhHuVbQUabuaWUqAraaW3DlgjgD5OLMNUZRCRh7DnJDEaw08FxpCP95L1TLTNZLxiu2azky24rxqCpxSxhmN/Om/aSXQkoUv+TM2O3/r4S98C738Cq/APNeEYrc591IwuywYLbWQJyGRftzUNPsSfFJr1Et/DVB8U6o6E2/lpV6CsGhnErJoZf3rj4C5ForoWph5s/FfAC0LrgPIGhRPxHrRI4DbtQj1Z/A82H4X+9xR1oPgWcEBqNbXhn/6oNOkASaVE6xxNL95YD4o82wXascXJQIDAQABo1AwTjAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB0GA1UdDgQWBBSIuT1t3XqMSIvJkFDJBPUH2VZl5TANBgkqhkiG9w0BAQUFAAOCAQEAmedwWGcq08Tr8IvQT4d5934pEAbG89dTdZPzHq4pBsIkxAlZQpq2FpKwhxI2j770z5roRK2kROEaavTXwF/U7LdUGQMoQFHu15/biNtwVuiCvJkzUoIpbKanCGSskYwhvQ0JWxKrnSqIl3zJvVWeBLRrvbIVCxI1X37ACkjW5J9ijOh3Ma/xg7/vFgpvs1WbZxDOLj5h2aH66qg/feOflOJDtE+SsAymFP8sJKT+rkU4Kpznl8bsd6KorptxKL+Uwr3NPVbHhS1dfACfuizEhYy7Ja61Z6YC3CTa/pFk5Wtpwo21WMFOu7d3XSdY5XJE8umPg6ZZf6/folz53M7UFg==</X509Certificate></X509Data></KeyInfo></Signature>\r\n    <Subject>\r\n      <NameID Format=\"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent\">PPID-FDFFE8F1-D92C-4838-B46D-B3DD558E700E</NameID>\r\n      <SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\">\r\n        <SubjectConfirmationData NotOnOrAfter=\"2020-07-04T14:04:02.7064192Z\" Recipient=\"https://saml.oiosaml-net.dk\" />\r\n      </SubjectConfirmation>\r\n    </Subject>\r\n    <Conditions NotOnOrAfter=\"2020-07-04T14:04:02.7064192Z\">\r\n      <AudienceRestriction>\r\n        <Audience>https://saml.oiosaml-net.dk</Audience>\r\n      </AudienceRestriction>\r\n    </Conditions>\r\n    <AuthnStatement AuthnInstant=\"2020-07-04T13:04:02.7064192Z\" SessionIndex=\"669191448\">\r\n      <AuthnContext>\r\n        <AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</AuthnContextClassRef>\r\n      </AuthnContext>\r\n    </AuthnStatement>\r\n    <AttributeStatement>\r\n      <Attribute Name=\"urn:FirstName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>Lene</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"urn:LastName\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>Hansen</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"urn:Age\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>32</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"urn:oid:0.9.2342.19200300.100.1.3\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>lene@company.dk</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"urn:dk:company:attribute:Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>Medarbejder</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"urn:dk:company:attribute:Role\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>Udvikler</AttributeValue>\r\n      </Attribute>\r\n      <Attribute Name=\"dk:gov:saml:attribute:AssuranceLevel\" NameFormat=\"urn:oasis:names:tc:SAML:2.0:attrname-format:basic\">\r\n        <AttributeValue>3</AttributeValue>\r\n      </Attribute>\r\n    </AttributeStatement>\r\n  </Assertion>\r\n</q1:Response>
+Formateret til læsligt format:
+
+<?xml version="1.0"?>
+<q1:Response InResponseTo="id504862dc735940238498423de2ccf1d8" Destination="https://oiosaml-net.dk:20002/login.ashx" xmlns:q1="urn:oasis:names:tc:SAML:2.0:protocol">
+  <q1:Status>
+    <q1:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" />
+  </q1:Status>
+  <Assertion Version="2.0" ID="id0dd67986c42841baad49d69e6a601e12" IssueInstant="2020-07-04T13:14:02.7064192Z" xmlns="urn:oasis:names:tc:SAML:2.0:assertion">
+    <Issuer>https://oiosaml-demoidp.dk:20001/</Issuer><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" /><Reference URI="#id0dd67986c42841baad49d69e6a601e12"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" /><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#" /></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" /><DigestValue>/A6mETJCKnHLDSNNI521Gj6vGCGfMB05Xu0GuKi0m70=</DigestValue></Reference></SignedInfo><SignatureValue>nJ3tx1ryA+7Faw/nj7zGRwMnP/mqy5L8Pb/BA3lQqKPPTbwz/NqmNzdpK07FEWm6XPA0FCeZnHW2B7krUOY89RLuXzKuoDL4D6UAmaEHWDrNVId0jJiFhsDJXt50Kdl1BpNEYjc/Ge2xgKCq671qdaYn6sVFui43oql58npCQnU98aZLxz+S8C0nMZ9v8x0DaBjk7hWMkBaXRY4/tx7Cx50axYdz8KAxpuOtE+GlfggrbQfrpKo6eUhhlK4Rgsw3Z7MUrtZR2iRaG3yTUMr5oUmIoulGOhIYxHFXZZb37a51wbp8V18zAsc3TIC5qy/eYtm2UYxsx3DoFWmVOV1lbQ==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDGDCCAgCgAwIBAgIQYGHojnAZgq5BNkH4XckFdjANBgkqhkiG9w0BAQUFADAfMR0wGwYDVQQDDBRvaW9zYW1sIHRlc3QgZGVtb2lkcDAeFw0xNzA4MDIwOTEzMzhaFw0yOTEyMzEyMjAwMDBaMB8xHTAbBgNVBAMMFG9pb3NhbWwgdGVzdCBkZW1vaWRwMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr9tL9VNsfnRX6GYRwKqt0ZxN66kLwy3YEsz5bKRoLpPdXmdvYh+4rC4U4JvgOhHuVbQUabuaWUqAraaW3DlgjgD5OLMNUZRCRh7DnJDEaw08FxpCP95L1TLTNZLxiu2azky24rxqCpxSxhmN/Om/aSXQkoUv+TM2O3/r4S98C738Cq/APNeEYrc591IwuywYLbWQJyGRftzUNPsSfFJr1Et/DVB8U6o6E2/lpV6CsGhnErJoZf3rj4C5ForoWph5s/FfAC0LrgPIGhRPxHrRI4DbtQj1Z/A82H4X+9xR1oPgWcEBqNbXhn/6oNOkASaVE6xxNL95YD4o82wXascXJQIDAQABo1AwTjAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB0GA1UdDgQWBBSIuT1t3XqMSIvJkFDJBPUH2VZl5TANBgkqhkiG9w0BAQUFAAOCAQEAmedwWGcq08Tr8IvQT4d5934pEAbG89dTdZPzHq4pBsIkxAlZQpq2FpKwhxI2j770z5roRK2kROEaavTXwF/U7LdUGQMoQFHu15/biNtwVuiCvJkzUoIpbKanCGSskYwhvQ0JWxKrnSqIl3zJvVWeBLRrvbIVCxI1X37ACkjW5J9ijOh3Ma/xg7/vFgpvs1WbZxDOLj5h2aH66qg/feOflOJDtE+SsAymFP8sJKT+rkU4Kpznl8bsd6KorptxKL+Uwr3NPVbHhS1dfACfuizEhYy7Ja61Z6YC3CTa/pFk5Wtpwo21WMFOu7d3XSdY5XJE8umPg6ZZf6/folz53M7UFg==</X509Certificate></X509Data></KeyInfo></Signature>
+    <Subject>
+      <NameID Format="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent">PPID-FDFFE8F1-D92C-4838-B46D-B3DD558E700E</NameID>
+      <SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
+        <SubjectConfirmationData NotOnOrAfter="2020-07-04T14:04:02.7064192Z" Recipient="https://saml.oiosaml-net.dk" />
+      </SubjectConfirmation>
+    </Subject>
+    <Conditions NotOnOrAfter="2020-07-04T14:04:02.7064192Z">
+      <AudienceRestriction>
+        <Audience>https://saml.oiosaml-net.dk</Audience>
+      </AudienceRestriction>
+    </Conditions>
+    <AuthnStatement AuthnInstant="2020-07-04T13:04:02.7064192Z" SessionIndex="669191448">
+      <AuthnContext>
+        <AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</AuthnContextClassRef>
+      </AuthnContext>
+    </AuthnStatement>
+    <AttributeStatement>
+      <Attribute Name="urn:FirstName" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>Lene</AttributeValue>
+      </Attribute>
+      <Attribute Name="urn:LastName" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>Hansen</AttributeValue>
+      </Attribute>
+      <Attribute Name="urn:Age" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>32</AttributeValue>
+      </Attribute>
+      <Attribute Name="urn:oid:0.9.2342.19200300.100.1.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>lene@company.dk</AttributeValue>
+      </Attribute>
+      <Attribute Name="urn:dk:company:attribute:Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>Medarbejder</AttributeValue>
+      </Attribute>
+      <Attribute Name="urn:dk:company:attribute:Role" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>Udvikler</AttributeValue>
+      </Attribute>
+      <Attribute Name="dk:gov:saml:attribute:AssuranceLevel" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+        <AttributeValue>3</AttributeValue>
+      </Attribute>
+    </AttributeStatement>
+  </Assertion>
+</q1:Response>
+
+
+
+
+
+line343: catch (Exception e) {"Value cannot be null.\r\nParameter name: type"}

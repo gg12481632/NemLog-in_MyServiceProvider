@@ -1,0 +1,4 @@
+Use VS2019
+run as admin
+
+anysoft.dk
