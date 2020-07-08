@@ -126,6 +126,7 @@
     </Compile>
     <Compile Include="LogAction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Saml20Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />
@@ -218,7 +219,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>55498</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:20002</IISUrl>
+          <IISUrl>https://localhost:20001</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
