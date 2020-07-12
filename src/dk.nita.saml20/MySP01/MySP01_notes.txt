@@ -1,3 +1,36 @@
+Visual studio 2019/project properties/Web/Start URL=https://sp.anysoft.dk:20002
+Visual studio 2019/project properties/Web/Project URL=https://localhost:20002
+
+hosts file:
+127.0.0.1 sp.anysoft.dk
+
+
+C:\githubroot\NemLog-in_MyServiceProvider\src\dk.nita.saml20\dk.nita.saml20\Config\SAML20FederationConfig.cs
+LoadFileAsXmlDocument(fileName="C:\\githubroot\\NemLog-in_MyServiceProvider\\src\\dk.nita.saml20\\MySP01\\idp-metadata\\anysoft_idp.xml")
+
+Hvis certificated i folderen idp-metadata\ ikke er signeret korrekt genereres en exception.
+Men hvordan bærer man sig ad med at skabe et validt xml dokument til idp-metadata\ folderen?
+
+Fejler i linie 549: XmlSignatureUtils.CheckSignature(doc)
+hvor doc indeholder idp-metadata\\anysoft_idp.xml
+
+
+        public static bool CheckSignature(XmlDocument doc) //src\dk.nita.saml20\dk.nita.saml20\Utils\XmlSignatureUtils.cs
+        {
+            CheckDocument(doc); // veifies existance of 
+            SignedXml signedXml = RetrieveSignature(doc);
+
+            var lCert = GetCertificates(doc);
+            if (CheckSignature(signedXml, lCert))
+                return true;
+            return false;
+        }
+
+
+
+
+
+
 Net SAML2 Service Provider Framework.docx
 From document above:
 6.1 Creating your own service provider web site
@@ -96,8 +129,8 @@ Merge web.config for new project with web.config from OIOSAMP:
 		<MinimumAssuranceLevel>3</MinimumAssuranceLevel>
 		<ShowError>true</ShowError>
 		<ServiceProvider id="https://saml.oiosaml-net.dk" server="https://oiosaml-net.dk:20002">
-			<ServiceEndpoint localpath="/login.ashx" type="signon" redirectUrl="/Contact?action=sso" index="0"/> <!-- CHANGED -->
-			<ServiceEndpoint localpath="/logout.ashx" type="logout" redirectUrl="/About" index="1"/> <!-- CHANGED -->
+			<ServiceEndpoint localpath="/login.ashx" type="signon" redirectUrl="/" index="0"/> <!-- CHANGED -->
+			<ServiceEndpoint localpath="/logout.ashx" type="logout" redirectUrl="/" index="1"/> <!-- CHANGED -->
 			<ServiceEndpoint localpath="/logout.ashx" type="soaplogout" errorBehaviour="throwexception"/>
 			<ServiceEndpoint localpath="/metadata.ashx" type="metadata"/>
 			<md:ContactPerson contactType="administrative" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
@@ -145,8 +178,6 @@ Merge web.config for new project with web.config from OIOSAMP:
 
 
 
-
-
 	<system.web>
 		<authentication mode="Forms">
 			<forms cookieless="UseCookies" loginUrl="/login.ashx" name="MySP01" timeout="30"/>
@@ -167,6 +198,20 @@ Merge web.config for new project with web.config from OIOSAMP:
 
 	...
 </configuration>
+
+
+Change of id provider
+---------------------
+add file to idp-metadata/anysoft_idp.xml
+hvor entityID="https://idp_anysoft.dk:20001/" fra fil skal matche id i IDPEndPoints-liste.
+
+
+
+
+
+C:\githubroot\NemLog-in_MyServiceProvider\src\dk.nita.saml20\dk.nita.saml20\Protocol\Saml20SignonHandler.cs
+l-54
+
 
 
 
@@ -308,3 +353,13 @@ Formateret til læsligt format:
 
 
 line343: catch (Exception e) {"Value cannot be null.\r\nParameter name: type"}
+
+
+
+The service provider 'https://oiosaml-demoidp.dk:20001/' is not recognized.
+
+Decipher:
+https://oiosaml-demoidp.dk:20001/Signon.ashx?SAMLRequest=lZJfa8IwFMXfB%2FsOIe82idq0hlaR%2BSJsMFT2sLe0iTOsTWpvKu7bL%2FXPNgYT9pqTc87vXm42O9YVOugWjLM5ZhHFs%2Bn9XbZnYt75nV3pfafBo%2BUix0YVBY3LlGvNUz6mihWF1MlkNElpQuPxVmH0ck0ahiS0BOj00oKX1ocnOqQDmgwY21AuRlzEScQ5TUdx%2FIrRItQYK%2F3JvfO%2BAUGIMw5kXQ2Urp1RTaTexZBSysjavFlnIwm7Y1%2FzLAHMQed4KyvQGIWhLIg9y3HXWuEkGBBW1hqEL8V6%2FvQoAp9oWudd6SocJkYoO9G2Z%2B9tY2jTbU%2BKp1fSEyY0kbQf4LY%2BkGbkHHgOf3BWmd4C%2Fyzo3cE%2F75TRttSrsKbWlL12kX6IN2m%2BPl0SyV%2BRGfmG7W%2BB%2FDqG6Sc%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=WxdfgDtL9bhVM6zN8atZMtlfw%2bYCAtNVs9klXoLLqWmb%2bkbiwsKj%2bg%2bwdqSnLXrHytw3j9%2fiaYcFsXFgnFwQ0lvMbnxfT5Lgw2JNL4ZHLmS4jZM0T7ZX%2fPaT1tIAqaaq4KiBPid1A3vYy7aid0r8zWmq71%2fsp8mHor8BQfRbLoR6d%2fmtcUf9ogaTg%2fHImaFw3zTD5JFLyQ4zcQtHCb48mPj8dmqE8Jb3Pnl3%2b3UHWaslEZ2qqPshF2DFiiRu6K65iLo1T3CdfQTk5H7DdQsg70PrrKTvUO40%2fJQE9ocqW32s1u68%2b9fivujSevlogdUc3UTEC6qzQfkO6n0f7ZdMPA%3d%3d
+
+C:\githubroot\NemLog-in_MyServiceProvider\src\dk.nita.saml20\dk.nita.saml20\Protocol\Saml20SignonHandler.cs
+linie 709: context.Response.Redirect(s, true);
