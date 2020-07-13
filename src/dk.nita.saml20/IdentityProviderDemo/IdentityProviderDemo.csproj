@@ -271,6 +271,7 @@
   <PropertyGroup>
     <PreBuildEvent>:: Add HTTPS binding on any domain, such as oiosaml-demoidp.dk.
 "%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /-bindings.[protocol='https',bindingInformation='*:20001:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
-"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20001:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"</PreBuildEvent>
+"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20001:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
+</PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -235,6 +235,12 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>:: Add HTTPS binding on any domain, such as oiosaml-net.dk.
+"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /-bindings.[protocol='https',bindingInformation='*:20002:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
+"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20002:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
+</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
