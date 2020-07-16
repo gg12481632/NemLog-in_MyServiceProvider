@@ -1,0 +1,112 @@
+ACTION: Enter https://sp.anysoft.dk:20002/ from browser
+
+RESULT:
+
+curl 'https://sp.anysoft.dk:20002/' \
+  -H 'authority: sp.anysoft.dk:20002' \
+  -H 'cache-control: max-age=0' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk:20002/Home/AuthenticatedOnly' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=1f5e9049-ba76-482e-a97f-f563a639217e' \
+  --compressed
+
+Redirect to: 
+ 
+ curl 'https://sp.anysoft.dk:20002/Home/Login' \
+  -H 'authority: sp.anysoft.dk:20002' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk:20002/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=1f5e9049-ba76-482e-a97f-f563a639217e' \
+  --compressed
+
+Https Response Code : 302 
+Redirect to:
+
+curl 'https://sp.anysoft.dk:20002/login.ashx?ReturnUrl=/' \
+  -H 'authority: sp.anysoft.dk:20002' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk:20002/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=1f5e9049-ba76-482e-a97f-f563a639217e' \
+  --compressed
+
+Https Response Code : 302 
+Redirect to:
+location: https://idp.anysoft.dk:20001/Signon.ashx?SAMLRequest=lZLda8IwFMXfB%2FsfQt5tPmztGlpF5ouwwVDZw97SNJ1hNdHeVNx%2Fv9SPTQYT9pqTc87vXm4%2BOWwatNctGGcLzCKKJ%2BP7u3zHxLTza7vQu06DR%2FNZgU1VDrNhlspSp%2FUorlNeZjweqaGiqmRSJRqj10sSD0loDtDpuQUvrQ9PlNMBTQcsWTEueCJYHGUJG9GH%2BA2jWagxVvqje%2B39FgQhptpG0n6Cq31UfQhOKWVkad6ts5GE9aGveJEAZq8LXMsGAkIYyILYsQJ3rRVOggFh5UaD8Eosp89PIrCJbeu8U67BYVqE8iNpe%2FLeNoY23faUeHyhBLlpBnBNmpNT4Cn80dnK9Bb4Z0HvDv5pVxltlV6EFbVG9dpZuhJv0nx%2FOieSvyJz8gPb3wH5dQjjLw%3D%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=cqgaAkiEm2KKKC%2flzLgFmXsZwc3rpXep427ZgNeFzwrTccytK96Qo1WjX85toNdX94Jq3W29Hdc2jBs4z6zNmXkmduw2HfK8osg9tlzb2%2fC41czzU4tKv0cYMVAmlS%2f2qPy2eE%2bts8dtbndiLEgoybSVI%2fNdV3i53qnobg5p5LJsxlj0Pinklzx9S7IFnGzGxilzLrJTMYvKpvuEH3SmgLZjf3X9mIlnFcfwe6aD1W%2bv9j8NowAFeM%2f4UFwnbQheQyGtMgTitfCQBaHgcWuTUfv3uufxsBjuEbt4%2f9qmpObDY%2bMahobyLqCFqkqP3hfHlccbzRzK%2bG5UM6qbBaMzew%3d%3d
+SAMLRequest=td decrypted
+
+A login form is displayed:
+
+curl 'https://idp.anysoft.dk:20001/Signon.ashx
+?SAMLRequest=lZLda8IwFMXfB%2FsfQt5tPmztGlpF5ouwwVDZw97SNJ1hNdHeVNx%2Fv9SPTQYT9pqTc87vXm4%2BOWwatNctGGcLzCKKJ%2BP7u3zHxLTza7vQu06DR%2FNZgU1VDrNhlspSp%2FUorlNeZjweqaGiqmRSJRqj10sSD0loDtDpuQUvrQ9PlNMBTQcsWTEueCJYHGUJG9GH%2BA2jWagxVvqje%2B39FgQhptpG0n6Cq31UfQhOKWVkad6ts5GE9aGveJEAZq8LXMsGAkIYyILYsQJ3rRVOggFh5UaD8Eosp89PIrCJbeu8U67BYVqE8iNpe%2FLeNoY23faUeHyhBLlpBnBNmpNT4Cn80dnK9Bb4Z0HvDv5pVxltlV6EFbVG9dpZuhJv0nx%2FOieSvyJz8gPb3wH5dQjjLw%3D%3D
+&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512
+&Signature=cqgaAkiEm2KKKC%2flzLgFmXsZwc3rpXep427ZgNeFzwrTccytK96Qo1WjX85toNdX94Jq3W29Hdc2jBs4z6zNmXkmduw2HfK8osg9tlzb2%2fC41czzU4tKv0cYMVAmlS%2f2qPy2eE%2bts8dtbndiLEgoybSVI%2fNdV3i53qnobg5p5LJsxlj0Pinklzx9S7IFnGzGxilzLrJTMYvKpvuEH3SmgLZjf3X9mIlnFcfwe6aD1W%2bv9j8NowAFeM%2f4UFwnbQheQyGtMgTitfCQBaHgcWuTUfv3uufxsBjuEbt4%2f9qmpObDY%2bMahobyLqCFqkqP3hfHlccbzRzK%2bG5UM6qbBaMzew%3d%3d' \
+
+  -H 'authority: idp.anysoft.dk:20001' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk:20002/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: ASP.NET_SessionId=k4nl4iog0fh0yd1vflymwsjc; _saml_idp=aHR0cHM6Ly9pZHAuYW55c29mdC5kazoyMDAwMS8%3d' \
+  --compressed \
+  --insecure
+
+
+curl 'https://idp.anysoft.dk:20001/SignonForm.aspx
+?SAMLRequest=lZLda8IwFMXfB%2fsfQt5tPmztGlpF5ouwwVDZw97SNJ1hNdHeVNx%2fv9SPTQYT9pqTc87vXm4%2bOWwatNctGGcLzCKKJ%2bP7u3zHxLTza7vQu06DR%2fNZgU1VDrNhlspSp%2fUorlNeZjweqaGiqmRSJRqj10sSD0loDtDpuQUvrQ9PlNMBTQcsWTEueCJYHGUJG9GH%2bA2jWagxVvqje%2b39FgQhptpG0n6Cq31UfQhOKWVkad6ts5GE9aGveJEAZq8LXMsGAkIYyILYsQJ3rRVOggFh5UaD8Eosp89PIrCJbeu8U67BYVqE8iNpe%2fLeNoY23faUeHyhBLlpBnBNmpNT4Cn80dnK9Bb4Z0HvDv5pVxltlV6EFbVG9dpZuhJv0nx%2fOieSvyJz8gPb3wH5dQjjLw%3d%3d
+&SigAlg=http%3a%2f%2fwww.w3.org%2f2001%2f04%2fxmldsig-more%23rsa-sha512
+&Signature=cqgaAkiEm2KKKC%2flzLgFmXsZwc3rpXep427ZgNeFzwrTccytK96Qo1WjX85toNdX94Jq3W29Hdc2jBs4z6zNmXkmduw2HfK8osg9tlzb2%2fC41czzU4tKv0cYMVAmlS%2f2qPy2eE%2bts8dtbndiLEgoybSVI%2fNdV3i53qnobg5p5LJsxlj0Pinklzx9S7IFnGzGxilzLrJTMYvKpvuEH3SmgLZjf3X9mIlnFcfwe6aD1W%2bv9j8NowAFeM%2f4UFwnbQheQyGtMgTitfCQBaHgcWuTUfv3uufxsBjuEbt4%2f9qmpObDY%2bMahobyLqCFqkqP3hfHlccbzRzK%2bG5UM6qbBaMzew%3d%3d' \
+  -H 'authority: idp.anysoft.dk:20001' \
+  -H 'cache-control: max-age=0' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'origin: https://idp.anysoft.dk:20001' \
+  -H 'content-type: application/x-www-form-urlencoded' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://idp.anysoft.dk:20001/Signon.ashx?SAMLRequest=lZLda8IwFMXfB%2FsfQt5tPmztGlpF5ouwwVDZw97SNJ1hNdHeVNx%2Fv9SPTQYT9pqTc87vXm4%2BOWwatNctGGcLzCKKJ%2BP7u3zHxLTza7vQu06DR%2FNZgU1VDrNhlspSp%2FUorlNeZjweqaGiqmRSJRqj10sSD0loDtDpuQUvrQ9PlNMBTQcsWTEueCJYHGUJG9GH%2BA2jWagxVvqje%2B39FgQhptpG0n6Cq31UfQhOKWVkad6ts5GE9aGveJEAZq8LXMsGAkIYyILYsQJ3rRVOggFh5UaD8Eosp89PIrCJbeu8U67BYVqE8iNpe%2FLeNoY23faUeHyhBLlpBnBNmpNT4Cn80dnK9Bb4Z0HvDv5pVxltlV6EFbVG9dpZuhJv0nx%2FOieSvyJz8gPb3wH5dQjjLw%3D%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=cqgaAkiEm2KKKC%2flzLgFmXsZwc3rpXep427ZgNeFzwrTccytK96Qo1WjX85toNdX94Jq3W29Hdc2jBs4z6zNmXkmduw2HfK8osg9tlzb2%2fC41czzU4tKv0cYMVAmlS%2f2qPy2eE%2bts8dtbndiLEgoybSVI%2fNdV3i53qnobg5p5LJsxlj0Pinklzx9S7IFnGzGxilzLrJTMYvKpvuEH3SmgLZjf3X9mIlnFcfwe6aD1W%2bv9j8NowAFeM%2f4UFwnbQheQyGtMgTitfCQBaHgcWuTUfv3uufxsBjuEbt4%2f9qmpObDY%2bMahobyLqCFqkqP3hfHlccbzRzK%2bG5UM6qbBaMzew%3d%3d' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: ASP.NET_SessionId=k4nl4iog0fh0yd1vflymwsjc; _saml_idp=aHR0cHM6Ly9pZHAuYW55c29mdC5kazoyMDAwMS8%3d' \
+  --data-raw '__VIEWSTATE=%2FwEPDwUJNDA1MTE3ODYwZGSkgnwqoPiH1Q9b4Of4PY3hUIK8w%2BX4H%2BOqfnoLWUVwVw%3D%3D&__VIEWSTATEGENERATOR=FD3E86D8&ctl00%24ContentPlaceHolder1%24UsernameTextbox=Lene&ctl00%24ContentPlaceHolder1%24PasswordTestbox=Test1234&ctl00%24ContentPlaceHolder1%24ctl00=Login' \
+  --compressed \
+  --insecure
+
+ACTION:
+Enter UserName=Lene and Password=Test1234 and press enter.
+
+RESULT:
+
+
+
+
+
+User enters UserName and Password
+

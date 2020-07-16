@@ -1,0 +1,196 @@
+Created by Holm, Ronnie (RHO013)-Ekstern, last modified on Jul 08, 2020 Go to start of metadata
+Det er muligt at gendanne SAML-assertions alene ud fra NemLog-in logfil-fortegnelser. For eksempel kan man gendanne CPR-nummer udfra PID'er i logfiler. Processen fra logfiler til assertions benyttes herunder til at illustrere OIOSAML.Net's authentication-bidrag til en service provider.
+
+Der er dog en tvist. De dele af logfilerne, der indeholder assertions er krypterede. Men da OIOSAML.Net kan dekrypterer assertions, kan vi også. OIOSAML.Net tilfører dog dekrypteringsprocessen meget "accidental complexity". Men at forstå processen giver en dybere forståelse, og påskønnelse, af OIOSAML.Net.
+
+Med udgangspunkt i et request/response login-flow mellem SP og IdP: Login-request til NemLog-in Test IdP fremgår af OIOSAML.Net logfilen. Bemærk at ID benyttes til at korrelere requests/responses og til at beskytte mod replay-angreb. OIOSAML.Net tillader kun at modtage et svar med samme ID:
+
+<q1:AuthnRequest xmlns:q1="urn:oasis:names:tc:SAML:2.0:protocol" 
+       ID="id849200f335cc49d381c46ec9ce484d0e" 
+       Version="2.0" 
+       IssueInstant="2020-06-13T13:52:35.035713Z" 
+       Destination="https://login.test-nemlog-in.dk/adfs/ls/" 
+       ForceAuthn="false" 
+       IsPassive="false">
+  <Issuer xmlns="urn:oasis:names:tc:SAML:2.0:assertion">https://saml.oiosaml-net.dk</Issuer>
+  <Conditions xmlns="urn:oasis:names:tc:SAML:2.0:assertion">
+    <AudienceRestriction>
+      <Audience>https://saml.oiosaml-net.dk</Audience>
+    </AudienceRestriction>
+  </Conditions>
+</q1:AuthnRequest>
+Login-response fra NemLog-in Test IdP taget fra logfilen ses herunder. Svarer var oprindeligt 25 KB, men de to base-64 encodede CipherValue er fjernet: 
+
+<Response xmlns="urn:oasis:names:tc:SAML:2.0:protocol" 
+      ID="_0f6fac27-b958-0430-62c3-0d534ed2489c" 
+      Version="2.0" 
+      IssueInstant="2020-06-13T13:53:23.0513505Z" 
+      Destination="https://oiosaml-net.dk:20002/login.ashx" 
+      InResponseTo="id849200f335cc49d381c46ec9ce484d0e">
+  <Issuer xmlns="urn:oasis:names:tc:SAML:2.0:assertion" Format="urn:oasis:names:tc:SAML:2.0:nameid-format:entity">https://saml.test-nemlog-in.dk/</Issuer>
+  <Status>
+    <StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+  </Status>
+  <EncryptedAssertion xmlns="urn:oasis:names:tc:SAML:2.0:assertion">
+    <xenc:EncryptedData xmlns:xenc="http://www.w3.org/2001/04/xmlenc#" Type="http://www.w3.org/2001/04/xmlenc#Element">
+      <xenc:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"/>
+      <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
+        <e:EncryptedKey xmlns:e="http://www.w3.org/2001/04/xmlenc#">
+          <e:EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p">
+            <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+          </e:EncryptionMethod>
+          <KeyInfo>
+            <o:SecurityTokenReference xmlns:o="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+              <X509Data>
+                <X509IssuerSerial>
+                  <X509IssuerName>CN=TRUST2408 Systemtest XIX CA, O=TRUST2408, C=DK</X509IssuerName>
+                  <X509SerialNumber>1478058327</X509SerialNumber>
+                </X509IssuerSerial>
+              </X509Data>
+            </o:SecurityTokenReference>
+          </KeyInfo>
+          <e:CipherData>
+            <e:CipherValue>WAZ...3yiw==</e:CipherValue>
+          </e:CipherData>
+        </e:EncryptedKey>
+      </KeyInfo>
+      <xenc:CipherData>
+        <xenc:CipherValue>Xps...518=</xenc:CipherValue>
+      </xenc:CipherData>
+    </xenc:EncryptedData>
+  </EncryptedAssertion>
+</Response>
+
+Svaret består af et SAML-indpakket signeret og krypteret dokument, der i bedste babushka-stil er indeholdt mellem <xenc:EncryptedData>...</xenc:EncryptedData>. Af nodens navnerum ses, at xenc er en 
+W3C-standard som bl.a. understøtter X509-certifikatformatet. X509 er det format NemId/NemLog-in certifikaterne er baseret på og er et container-format hvor "de store tal" der udgør nøglerne er indlejret, 
+pakket ind i metadata som CRL Distribution Points, gyldighedsperiode, serienummer mm.
+
+Herunder ses hvilke certifikater der benyttes til IdP -> SP-kommunikationen:
+
+transform(plainText) = encode(encrypt_sp-pub(plainText + sign_idp-pri(hash(plainText)))) => cipherValue
+OIOSAML.Net implementerer nedenstående funktion for at dekryptere IdP-svaret:
+
+transform-1(cipherValue) => decrypt_sp-pri(decode(cipherValue)) => plainText
+Bemærk de to base-64 encodede CipherValue-noder i IdP-svaret. Decoded er CipherValue1 (altid) 256 bytes. CipherValue2 har variabel længde bestemt af den metadata SP har bedt IdP om og længden af brugerdata i hver assertion. De 256 bytes i CipherValue1 skifter med hvert response, men er relateret til krypteringen af CipherValue2.
+
+Uden både de 256 bytes og den private nøgle i SP-certifikatet, kan CipherValue2 ikke dekrypteres: CipherValue1 og den private nøgle i SP-certifikatet kombineres til en session key, som fødes ind i en symmetrisk AES-algoritme. Den symmetriske AES-algoritme benyttes fordi den er hurtigere og mindre ressourcekrævende og cipherValue2 er 17 KB decoded mod 256 bytes cipherValue1 der dekrypteres med en assymetrisk algoritme.
+
+Funktionaliteten til at dekryptere dokumentet og verificere dets signatur er indbygget i .NET frameworket, men API'erne kan være udfordrende at forstå.
+
+1. Hent den private del af SP-certifikatet fra Certificate Store. En SP læser dets thumbprint-værdi fra Web.config:
+
+X509Certificate2 certificate = null;
+using (X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+{
+    store.Open(OpenFlags.ReadOnly);
+    certificate = 
+        store.Certificates.Find(
+            X509FindType.FindByThumbprint, 
+            findValue: "0E6DBCC6EFAAFF72E3F3D824E536381B26DEECF5", 
+            validOnly: true)[0];
+}
+2. Udtræk detaljer om hvilken algoritme der er benyttet til at danne den offentlige/private nøgle:
+TKNote: RSA, keysize = 2048
+TKNote: Hvilken værdi i Service Providerens Metadatafil der uploades indeholder den tilhørende public key????
+
+
+
+// Algorithm inferred is RSA-PKCS1-KeyEx for Public Key Cryptography Standards, version 1 (https://tools.ietf.org/html/rfc8017). 
+AsymmetricAlgorithm privateKeyAssociatedAlgorithm = certificate.PrivateKey;
+
+// RSA is base class for many encryption algorithm, including AES used later.
+RSA transportAlgorithm = (RSA)privateKeyAssociatedAlgorithm;
+3. Konfigurer symmetrisk AES256-CBC til at benytte sessionKey som nøgle:
+
+byte[] keyData = Convert.FromBase64String(cipherValue1);
+
+// Optimal Asymmetric Encryption Padding is "true" because "rsa-oaep" is present in <e:EncryptionMethod> node.
+byte[] sessionKey = EncryptedXml.DecryptKey(keyData, transportAlgorithm, useOAEP: true);
+
+// Because <xenc:EncryptionMethod> node in response reads "aes256-cbc". AES was originally named Rijndael.
+// AES is a symmetric algorithm and the key used is the previously established sessionKey.
+var aesSymmetricAlgorithm = new RijndaelManaged
+{
+    KeySize = 256,
+    Key = sessionKey
+};
+4. Kør cipherValue2 gennem AES256-CBC for at få plaintext bytes retur:
+
+XmlDocument doc = new XmlDocument();
+doc.LoadXml(xencElement);
+var encryptedDataElement = doc.DocumentElement;
+var encryptedData = new EncryptedData();
+encryptedData.LoadXml(encryptedDataElement);
+
+var encryptedXml = new EncryptedXml();
+byte[] plaintext = encryptedXml.DecryptData(encryptedData, aesSymmetricAlgorithm);
+5. Konvert plaintext bytes til encoded streng:
+
+using (var sr = new StringReader(Encoding.UTF8.GetString(plaintext)))
+    Console.WriteLine(sr.ReadToEnd());
+Resultatet er et XML-dokument med SAML-assertions. Her er det en test-medarbejder, der er logget ind:
+
+<Assertion xmlns="urn:oasis:names:tc:SAML:2.0:assertion" 
+       ID="_78465bcd-3b75-46a4-8931-bb9ce952e762" 
+       IssueInstant="2020-06-13T13:53:23.035Z" Version="2.0">
+  <Issuer>https://saml.test-nemlog-in.dk/</Issuer>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+    <SignedInfo>
+      <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+      <Reference URI="#_78465bcd-3b75-46a4-8931-bb9ce952e762">
+        <Transforms>
+          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+          <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+        </Transforms>
+        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+        <DigestValue>D1SNuYMWE5nxPX5gQUHjjhoFfmkhZvmCi2SaHg/H/fQ=</DigestValue>
+      </Reference>
+    </SignedInfo>
+    <SignatureValue>SxN...A==</SignatureValue>
+    <KeyInfo>
+      <X509Data>
+        <X509Certificate>MII...3Bj</X509Certificate>
+      </X509Data>
+    </KeyInfo>
+  </Signature>
+  <Subject>
+    <NameID Format="urn:oasis:names:tc:SAML:1.1:nameid-format:X509SubjectName">C=DK,O=Rigspolitiet // CVR:17143611,CN=DSA Tester,Serial=CVR:17143611-RID:51233563</NameID>
+    <SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer">
+      <SubjectConfirmationData InResponseTo="id849200f335cc49d381c46ec9ce484d0e" NotOnOrAfter="2020-06-13T14:53:23.035Z" Recipient="https://oiosaml-net.dk:20002/login.ashx"/>
+    </SubjectConfirmation>
+  </Subject>
+  <Conditions NotBefore="2020-06-13T13:53:23.004Z" NotOnOrAfter="2020-06-13T14:53:23.004Z">
+    <AudienceRestriction>
+      <Audience>https://saml.oiosaml-net.dk</Audience>
+    </AudienceRestriction>
+  </Conditions>
+  <AttributeStatement>
+    ...
+    <Attribute Name="urn:oid:0.9.2342.19200300.100.1.3" NameFormat="urn:oasis:names:tc:SAML:2.0:attrname-format:basic">
+      <AttributeValue>xxx000@politi.dk</AttributeValue>
+    </Attribute>
+    ...
+  </AttributeStatement>
+  <AuthnStatement AuthnInstant="2020-06-13T13:53:23.004Z" SessionIndex="74-A1-DE-A0-EA-49-B4-71-72-CA-D0-09-4E-8C-E3-2E-55-D1-26-3B">
+    <AuthnContext>
+      <AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:X509</AuthnContextClassRef>
+    </AuthnContext>
+  </AuthnStatement>
+</Assertion>
+Det er et dictionary af de attribute name/attribute value-par som OIOSAML.Net lægger i session state og som SP kan træffe beslutninger udfra.
+
+TKNote: Der udføres også et signatur check. 
+Kan du forklare hvad der sker i "GetTrustedSigners"
+        private static bool IsSatisfiedByAllSpecifications(IDPEndPoint ep, X509Certificate2 cert, out string failureReason)
+Hvad er det helt præcist der verificeres. Implementation er gemt bag et interface.
+
+
+TKNote:
+Da ThumbPrint fra web.config anvendes til at finde signing-certifikatet, og derefter dekryptere Cipher1 værdien ved brug af private-key'en, så må IDP provideren være i besidelse af den tilhørende public key!
+Jeg antager at den ligger i download fra sp metadata.ashx der downloades og oploades til IDP, korrekt?
+Hvilken værdi i xml filen indeholder public key???
+
+
+
+
