@@ -1,0 +1,96 @@
+
+PRECONDITIONS:
+(1) En MVC web application er blevet udvided med NemLog-in ved brug af OIOSAML frameworket.
+See WIKI: Udvid en ASP.Net Web applikation (dotnet 4.7.2+) med NemLog-in ved brug af OIOSAML frameworket.
+
+(2) Envidere er web-applikationen installeret under IIS i Azure.
+See WIKI: Installer en ASP.Net Web applikation (dotnet 4.7.2+) med NemLog-in under IIS
+
+(3) Og endelig er den tilhørende Demo Identity Provider fra OIOSAML installeret under IIS i Azure.
+See WIKI: Installer Demo Identity Provider fra OIOSAML under IIS
+
+(4) Enable google developer tools (Ctrl-shift-I)
+
+(5) En nemLog-in bruger er logget på:
+
+
+ACTION:
+Bruger vælger logout-menuen
+
+RESULT:
+curl 'https://sp.anysoft.dk/Home/Logout' \
+  -H 'authority: sp.anysoft.dk' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=958c1f80-b0bc-44da-9e8c-bf4aa580f3ac; MySP01=5EDC0EF5515232A506F49BBEC9194CDD8C6352D929A1C7547EDCEE474D02D6EC9557AC0B157F2DE9CA5D9DA1DD1F6998E6A138FFEA029AB323715000C17792BBDCAAE02D335A7BE994F5BF6CE538BFC7B7C3EDC878D78ECC127E60A89345F2177DCCBC89087C22D899605796BD9A8762B25E9BB9589FC11D8D700E0C69C8230BEC93C9CFF76E1C286F3C18FFA8C22F33E12BFCF90DDC66CCBCFB5C2279D89340' \
+  --compressed
+
+
+Response Headers:
+status 302: redirect
+location: /logout.ashx
+
+curl 'https://sp.anysoft.dk/logout.ashx' \
+  -H 'authority: sp.anysoft.dk' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=958c1f80-b0bc-44da-9e8c-bf4aa580f3ac; MySP01=5EDC0EF5515232A506F49BBEC9194CDD8C6352D929A1C7547EDCEE474D02D6EC9557AC0B157F2DE9CA5D9DA1DD1F6998E6A138FFEA029AB323715000C17792BBDCAAE02D335A7BE994F5BF6CE538BFC7B7C3EDC878D78ECC127E60A89345F2177DCCBC89087C22D899605796BD9A8762B25E9BB9589FC11D8D700E0C69C8230BEC93C9CFF76E1C286F3C18FFA8C22F33E12BFCF90DDC66CCBCFB5C2279D89340' \
+  --compressed
+ 
+Response Headers:
+status 302: redirect
+location: https://idp.anysoft.dk:20001/Logout.ashx?SAMLRequest=lZJfS8MwFMXfBb9DyHvapP8bug41KxRUhooPvmVrqsUu2XpTmd%2FedGUgPgx8ycNNzu%2Bec3OL5XHXoy81QGf0AjOP4mV5fVUcGL8372a0T%2BowKrCoFgvcNUypNkvZJkxZG8XbOA%2BbjUqiIGFJ0gZ5g9HrGRU4FKoBRlVrsFJbV6IBJTQlLH8JGI9jzkIvTPIso%2FEbRsK16bS0J%2FWHtXvgvt81e0%2FqbzCt9ZpPHlBKmT878yR8HDF6UhImxThobiR0wLXcKeB2y59vHu6588H7k4CPoAaMXGAN%2FMAuS%2FaDsWZreuymgVBxCjLM2stCCa7LFAKX5xAgdz2B30EKfwbO8EcHqQWqzLCT9jJ9qnQNaU9P%2BX4aNlilLf6ntfW6FqQSVbXKKkZEHtyRKAszchslgtyGQsRxtkopXRX%2B7G526tbiWcH0wbVu1LFkYRjnqTujwv9757bI%2F7tG5Q8%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=RQzPLJClzK0s6w86usHX70w7mgHFrvfaoGvU8TKqFiKPIHsiOm9HqMJUtGHc7ObPuw21X%2bgpQFdfxYF2pUKh3vhRAhiHTLK6sYh%2fTWMyiv2zCuQlmUMdWTnIDxsrfwbDunz%2fmN1MS1aZWFXwTRDbZtg%2bRuEXljGZdrKZ%2b7xRGuE9j9SJG%2bKNW40C%2bS7%2bz0LodsMQDppNCc9L7Y74Gp4UBHyToL%2fAnc1PVk6oxZncPXS5UvKMGEQWpebJp8K3%2f8UwtK%2bQzZp6iMv4CzNQituQichbzyt03y44KFZLghrGAprZd3ZekIvz2fL7%2fn9Narsm6jFqtJhErXaVlnZK8KnKnw%3d%3d
+
+
+curl 'https://idp.anysoft.dk:20001/Logout.ashx?SAMLRequest=lZJfS8MwFMXfBb9DyHvapP8bug41KxRUhooPvmVrqsUu2XpTmd%2FedGUgPgx8ycNNzu%2Bec3OL5XHXoy81QGf0AjOP4mV5fVUcGL8372a0T%2BowKrCoFgvcNUypNkvZJkxZG8XbOA%2BbjUqiIGFJ0gZ5g9HrGRU4FKoBRlVrsFJbV6IBJTQlLH8JGI9jzkIvTPIso%2FEbRsK16bS0J%2FWHtXvgvt81e0%2FqbzCt9ZpPHlBKmT878yR8HDF6UhImxThobiR0wLXcKeB2y59vHu6588H7k4CPoAaMXGAN%2FMAuS%2FaDsWZreuymgVBxCjLM2stCCa7LFAKX5xAgdz2B30EKfwbO8EcHqQWqzLCT9jJ9qnQNaU9P%2BX4aNlilLf6ntfW6FqQSVbXKKkZEHtyRKAszchslgtyGQsRxtkopXRX%2B7G526tbiWcH0wbVu1LFkYRjnqTujwv9757bI%2F7tG5Q8%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha512&Signature=RQzPLJClzK0s6w86usHX70w7mgHFrvfaoGvU8TKqFiKPIHsiOm9HqMJUtGHc7ObPuw21X%2bgpQFdfxYF2pUKh3vhRAhiHTLK6sYh%2fTWMyiv2zCuQlmUMdWTnIDxsrfwbDunz%2fmN1MS1aZWFXwTRDbZtg%2bRuEXljGZdrKZ%2b7xRGuE9j9SJG%2bKNW40C%2bS7%2bz0LodsMQDppNCc9L7Y74Gp4UBHyToL%2fAnc1PVk6oxZncPXS5UvKMGEQWpebJp8K3%2f8UwtK%2bQzZp6iMv4CzNQituQichbzyt03y44KFZLghrGAprZd3ZekIvz2fL7%2fn9Narsm6jFqtJhErXaVlnZK8KnKnw%3d%3d' \
+  -H 'authority: idp.anysoft.dk:20001' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: ASP.NET_SessionId=wpkket52min1ae0r3udhqd3l; _saml_idp=aHR0cHM6Ly9pZHAuYW55c29mdC5kazoyMDAwMS8%3d' \
+  --compressed
+
+Response Headers:
+status 302: redirect
+location: https://sp.anysoft.dk:443/logout.ashx?SAMLResponse=fZHNasMwEITvgbyD0D3Wjy2cLk6gNBdDemlKDr3JktKYOpLjlSF9%2B7oyhfSS4ww7sx%2B7y0V1FbAPn2GMbw774NGRerehrS20kkZy05SaF0raxuTrZr1uisIKw%2B2JkqMbsA1%2BQ2XGKakRR1d7jNrHyeKSr3i5Ek%2FvUoBSIPJMqTKXhfqgZOcwtl7HlD7H2CMwhn2m%2FTeGU8zsF%2BsSU6bxfKPkduk8wlVs6Dh4CBpbBK8vDiEaODy%2F7mFCgH4IMZjQ0e1yQUiVgIY5%2BzioEd3wC0O3fzCtvacByTkXrGJz59w%2FHe4QdRwxyXvjJVhHjrob3eO9mKbhMBrjEClhczG7b07q%2F4O2Pw%3D%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&Signature=ADybRMC8d8vYgMUsROb36KNw1vRIDFpuseru1DTyYdo2D19hcQ7Zuv%2f3Suvlz%2fbcFgpV5sATfQJzSilSUO1bNuaX1msty8NtDBl7J4Fd6IdraVKiq9dDDVIHuZ6XTL1sWu11XxUcg0gnEi1K%2f6tXGitd1w951W0Mltm6yBOrh%2fK37p5ujeQtC7380ZK9e%2fmmEg3mOpzpqwrPMQE9JZttYQ0kXG3FVup1xKhVIlwGIyYFfnz8iD0qIpkr53xHYzRVk%2bpM0tkWFe%2b50BuEJyunsj7KFwF3PRcHqMxKiKadDCFD8kcSCXfjfksYJtgE5vIpEaGt%2fFg7H5%2fwG6qmmdPZUQ%3d%3d
+  
+curl 'https://sp.anysoft.dk/logout.ashx?SAMLResponse=fZHNasMwEITvgbyD0D3Wjy2cLk6gNBdDemlKDr3JktKYOpLjlSF9%2B7oyhfSS4ww7sx%2B7y0V1FbAPn2GMbw774NGRerehrS20kkZy05SaF0raxuTrZr1uisIKw%2B2JkqMbsA1%2BQ2XGKakRR1d7jNrHyeKSr3i5Ek%2FvUoBSIPJMqTKXhfqgZOcwtl7HlD7H2CMwhn2m%2FTeGU8zsF%2BsSU6bxfKPkduk8wlVs6Dh4CBpbBK8vDiEaODy%2F7mFCgH4IMZjQ0e1yQUiVgIY5%2BzioEd3wC0O3fzCtvacByTkXrGJz59w%2FHe4QdRwxyXvjJVhHjrob3eO9mKbhMBrjEClhczG7b07q%2F4O2Pw%3D%3D&SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1&Signature=ADybRMC8d8vYgMUsROb36KNw1vRIDFpuseru1DTyYdo2D19hcQ7Zuv%2f3Suvlz%2fbcFgpV5sATfQJzSilSUO1bNuaX1msty8NtDBl7J4Fd6IdraVKiq9dDDVIHuZ6XTL1sWu11XxUcg0gnEi1K%2f6tXGitd1w951W0Mltm6yBOrh%2fK37p5ujeQtC7380ZK9e%2fmmEg3mOpzpqwrPMQE9JZttYQ0kXG3FVup1xKhVIlwGIyYFfnz8iD0qIpkr53xHYzRVk%2bpM0tkWFe%2b50BuEJyunsj7KFwF3PRcHqMxKiKadDCFD8kcSCXfjfksYJtgE5vIpEaGt%2fFg7H5%2fwG6qmmdPZUQ%3d%3d' \
+  -H 'authority: sp.anysoft.dk' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'sec-fetch-dest: document' \
+  -H 'referer: https://sp.anysoft.dk/' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'cookie: oiosamlSession=958c1f80-b0bc-44da-9e8c-bf4aa580f3ac; MySP01=5EDC0EF5515232A506F49BBEC9194CDD8C6352D929A1C7547EDCEE474D02D6EC9557AC0B157F2DE9CA5D9DA1DD1F6998E6A138FFEA029AB323715000C17792BBDCAAE02D335A7BE994F5BF6CE538BFC7B7C3EDC878D78ECC127E60A89345F2177DCCBC89087C22D899605796BD9A8762B25E9BB9589FC11D8D700E0C69C8230BEC93C9CFF76E1C286F3C18FFA8C22F33E12BFCF90DDC66CCBCFB5C2279D89340' \
+  --compressed
+  
+Response Headers:
+status 302: redirect
+location: /
+
+
+Service Provider Applikationen er nu logget ud.
