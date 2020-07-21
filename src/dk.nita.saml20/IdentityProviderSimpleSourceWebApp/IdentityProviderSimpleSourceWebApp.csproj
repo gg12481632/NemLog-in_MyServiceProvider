@@ -8,17 +8,17 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B7CAA06B-F144-4938-B17E-9640F3A36420}</ProjectGuid>
+    <ProjectGuid>{3437865E-7034-4BE5-B06D-99619191E8BE}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MySP01</RootNamespace>
-    <AssemblyName>MySP01</AssemblyName>
+    <RootNamespace>IdentityProviderSimpleSourceWebApp</RootNamespace>
+    <AssemblyName>IdentityProviderSimpleSourceWebApp</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44343</IISExpressSSLPort>
+    <IISExpressSSLPort>44384</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -124,9 +124,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="LogAction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Saml20Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />
@@ -137,14 +135,8 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
-    <Content Include="idp-metadata\local_demo_idp.xml" />
-    <Content Include="idp-metadata\Test-nemlog-in-2.xml" />
-    <Content Include="images\johnny.jpg" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
-    <Content Include="login.ashx" />
-    <Content Include="logout.ashx" />
-    <Content Include="metadata.ashx" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
@@ -167,8 +159,9 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\Home\AuthenticatedOnly.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -187,20 +180,6 @@
     <Content Include="Scripts\jquery-3.4.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\dk.nita.saml20.ext.audit.log4net\dk.nita.saml20.ext.audit.log4net.csproj">
-      <Project>{e0529cb0-9183-4768-b654-db0f867f0e5f}</Project>
-      <Name>dk.nita.saml20.ext.audit.log4net</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\dk.nita.saml20.ext.sessionstore.sqlserver\dk.nita.saml20.ext.sessionstore.sqlserver.csproj">
-      <Project>{38cee6dc-0d71-44fa-815f-e38035bdc345}</Project>
-      <Name>dk.nita.saml20.ext.sessionstore.sqlserver</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\dk.nita.saml20\dk.nita.saml20.csproj">
-      <Project>{55520059-38bb-48bb-a30e-bfd385293d78}</Project>
-      <Name>dk.nita.saml20</Name>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -217,9 +196,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>55498</DevelopmentServerPort>
+          <DevelopmentServerPort>54870</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:20012</IISUrl>
+          <IISUrl>https://localhost:44384/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -235,12 +214,6 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
-  <PropertyGroup>
-    <PreBuildEvent>:: Add HTTPS binding on any domain, such as oiosaml-net.dk.
-"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /-bindings.[protocol='https',bindingInformation='*:20002:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
-"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20002:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
-</PreBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
