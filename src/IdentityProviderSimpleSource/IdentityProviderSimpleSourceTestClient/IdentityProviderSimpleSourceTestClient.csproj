@@ -51,6 +51,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IdentityProviderSimpleSourceLib\IdentityProviderSimpleSourceLib.csproj">
+      <Project>{442f34c3-26dc-40c2-9ebe-f87514a0989f}</Project>
+      <Name>IdentityProviderSimpleSourceLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="spmetadata\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

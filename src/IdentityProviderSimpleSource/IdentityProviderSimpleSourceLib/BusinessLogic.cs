@@ -9,7 +9,7 @@ namespace IdentityProviderSimpleSourceLib
 {
     public class BusinessLogic
     {
-        public static bool SignIn(string SAMLRequest,string SigAlg, string Signature)
+        public static AuthRequestSubset SignIn(string SAMLRequest,string SigAlg, string Signature)
         {
             string deflatedMessage = BusinessLogicUtil.DeflateDecompress(SAMLRequest);
 
@@ -27,8 +27,8 @@ namespace IdentityProviderSimpleSourceLib
                 SAMLRequest_serviceProviderID = nodeList[0]?.InnerText;
             }
             //IdpConfig.Instance
-            SPMetadata spMetaData = IdpConfig.Instance.GetSPMetadataById(SAMLRequest_serviceProviderID);
-            return false;
+            AuthRequestSubset spMetaData = IdpConfig.Instance.GetSPMetadataById(SAMLRequest_serviceProviderID);
+            return spMetaData;
         }
     }
 }

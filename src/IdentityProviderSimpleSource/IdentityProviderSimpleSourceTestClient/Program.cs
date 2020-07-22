@@ -33,7 +33,7 @@ namespace IdentityProviderSimpleSourceTestClient
 
             SAMLRequest = DecodeUrlString(SAMLRequest);
             SigAlg = DecodeUrlString(SigAlg);
-            bool result = BusinessLogic.SignIn(SAMLRequest, SigAlg, Signature);
+            AuthRequestSubset spMetaData = BusinessLogic.SignIn(SAMLRequest, SigAlg, Signature);
         }
 
         private static string DecodeUrlString(string url)
