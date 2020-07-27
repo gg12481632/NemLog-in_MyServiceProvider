@@ -3,5 +3,5 @@
   <BaseUrl>https://oiosaml-demoidp.dk:20001/</BaseUrl>
   <certThumbPrint>7AD6A798E0D0A14B1746137CD86A5930356D97EF</certThumbPrint>
   <certLocation>LocalMachine</certLocation>
-  <certStore>My</certStore>
+  <certStore>TrustedPeople</certStore>
 </FileConfig>
