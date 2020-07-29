@@ -14,6 +14,7 @@ namespace IdentityProviderDemo.Logic
     /// </summary>
     public class IDPConfig
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         static IDPConfig()
         {
             _metadataDocs = new Dictionary<string, Saml20MetadataDocument>();
@@ -246,14 +247,17 @@ namespace IdentityProviderDemo.Logic
                 _storeLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), conf.certLocation);
                 _storeName = (StoreName)Enum.Parse(typeof(StoreName), conf.certStore);
 
+                log.Debug($"X509Store:(name,location)={_storeName},{_storeLocation}");
                 X509Store store = new X509Store(_storeName, _storeLocation);
 
                 store.Open(OpenFlags.ReadOnly);
 
+                log.Debug($"certThumbPrint={conf.certThumbPrint}");
                 X509Certificate2Collection coll = store.Certificates.Find(X509FindType.FindByThumbprint, conf.certThumbPrint, true);
                 if (coll.Count == 1)
                 {
                     _idpCertificate = coll[0];
+                    log.Debug("found!");
                 }
             }
         }

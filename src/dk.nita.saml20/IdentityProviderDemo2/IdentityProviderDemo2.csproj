@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{59FBBB30-3743-4CAC-A4CD-260F2674F49C}</ProjectGuid>
+    <ProjectGuid>{2CB37D8B-01F2-42C7-A790-5F34178600AE}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -37,7 +37,6 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,13 +47,11 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MSI|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release64|AnyCPU' ">
     <OutputPath>bin\</OutputPath>
@@ -67,7 +64,6 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -114,6 +110,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -236,6 +235,9 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -256,7 +258,7 @@
           <AutoAssignPort>False</AutoAssignPort>
           <DevelopmentServerPort>20003</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:20001</IISUrl>
+          <IISUrl>https://localhost:20015</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -270,8 +272,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
   <PropertyGroup>
     <PreBuildEvent>:: Add HTTPS binding on any domain, such as oiosaml-demoidp.dk.
-"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /-bindings.[protocol='https',bindingInformation='*:20010:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
-"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20010:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
-</PreBuildEvent>
+"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /-bindings.[protocol='https',bindingInformation='*:20001:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"
+"%25programfiles%25\IIS Express\appcmd.exe" set site "$(ProjectName)" /+bindings.[protocol='https',bindingInformation='*:20001:'] /apphostconfig:"$(SolutionDir).vs\$(SolutionName)\config\applicationhost.config"</PreBuildEvent>
   </PropertyGroup>
 </Project>

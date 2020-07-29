@@ -19,6 +19,7 @@ namespace IdentityProviderDemo
     /// </summary>
     public class MetadataIssuer : IHttpHandler
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public void ProcessRequest(HttpContext context)
         {
@@ -73,7 +74,21 @@ namespace IdentityProviderDemo
 
             X509Certificate2 cert = IDPConfig.IDPCertificate;
             var id = doc.DocumentElement.GetAttribute("ID");
-            signatureProvider.SignMetaData(doc, id, cert);
+            try
+            {
+                log.Debug($"before call to cert.PrivateKey, Thumbprint={cert.Thumbprint}");
+                var pkey = cert.PrivateKey;
+                log.Debug("done");
+                log.Debug($"testing pkey==null={pkey == null}");
+
+                log.Debug($"before call to SignMetaData, Thumbprint={cert.Thumbprint}");
+                signatureProvider.SignMetaData(doc, id, cert);
+            }
+            catch(Exception e)
+            {
+                log.Error($"exception:"+e);
+                throw;
+            }
 
             context.Response.Write( doc.OuterXml );
         }

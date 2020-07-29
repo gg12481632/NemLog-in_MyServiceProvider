@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("IdentityProviderDemo2")]
+[assembly: AssemblyTitle("IdentityProviderDemo")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ITST")]
-[assembly: AssemblyProduct("IdentityProviderDemo2")]
+[assembly: AssemblyProduct("IdentityProviderDemo")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -21,3 +21,4 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3d5900ae-111a-45be-96b3-d9e4606ca793")]
+[assembly: log4net.Config.XmlConfigurator(Watch = true)]
