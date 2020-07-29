@@ -1,0 +1,128 @@
+AZURE SETUP:
+
+
+--------------------------
+Identity Provider Settings:
+--------------------------
+(1)
+The identity provider signing certificate is located in ssc_idp_anysoft_dk_6a798.pfx (The 6a798 are the first five charcters of the thumbprint)
+
+Important:
+The storage provider being used in the certificate must be CSR and not CNG
+Test: CertUtil.exe -store -user my results
+The KeySpec=Signature parameter to the powershell command New-SelfSignedCertificate results in a certificate with storage provider = CSR.
+$cert = New-SelfSignedCertificate -DnsName sp.anysoft.dk -KeyFriendlyName IdpSigningCertificate  -CertStoreLocation cert:\LocalMachine\My -KeySpec Signature
+If the storage provider is other than CSR we get the error:
+Error: "Invalid provider type specified" CryptographicException when trying to load private key of certificate
+For details see https://remyblok.tweakblogs.net/blog/11803/converting-certificate-to-use-csp-storage-provider-in-stead-of-cng-storage-provider)
+
+
+(2)
+The identity provider signing certificate is loaded into the certificate store using the certmgr tootl which results in 
+a certificate specifed by (ThumbPrint,Location,Store,subject)=("6a798b4e5715a6a0be160844da982bdc6a694de0",LocalMachine,MY,idp.anysoft.dk)
+
+
+(I don't think the certificate subject=idp.anysoft.dk matters)
+
+(3)
+In the file
+C:\inetpub\IdentityProviderDemo2_20200729\idp-metadata\idpConfig.xml
+we have the following xml speifiying the identity provider signing certificate:
+
+<?xml version="1.0"?>
+<FileConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <BaseUrl>https://idp.anysoft.dk:20001/</BaseUrl>
+  <certThumbPrint>6a798b4e5715a6a0be160844da982bdc6a694de0</certThumbPrint>
+  <certLocation>LocalMachine</certLocation>
+  <certStore>My</certStore>
+</FileConfig>
+
+(4)
+The list of service provider that are allowed to authorize against the identity provider is specified by a list of files.
+Each service provider provides their own metadata file which is uploaded to:
+C:\inetpub\IdentityProviderDemo2_20200729\idp-metadata\spmetadata\
+This can also be done from the UI
+https://idp.anysoft.dk:20001/Control.aspx
+Choose file and upload.
+
+In this seup with the service provider below we have 
+C:\inetpub\IdentityProviderDemo2_20200729\idp-metadata\spmetadata\sp_metadata_anysoft_dk_18d24
+
+(5)
+Finally a metadata file is created by the id provider.
+This is done in call to:
+https://idp.anysoft.dk:20001/Control.aspx
+Choose the (Download metadata) option.
+Rename the downloaded xml file to idp_metadata_anysoft_dk_6a798.xml
+and distribute to your service providers.
+
+
+--------------------------
+Service Provider Settings:
+--------------------------
+(1)
+The service provider signing certificate is located in ssc_sp_anysoft_dk_18d24.pfx (The 18d24 are the first five charcters of the thumbprint)
+
+Important:
+The storage provider being used in the certificate must be CSR and not CNG
+The KeySpec=Signature parameter to the powershell results in a certificate with storage provider = CSR.
+$cert = New-SelfSignedCertificate -DnsName sp.anysoft.dk -KeyFriendlyName IdpSigningCertificate  -CertStoreLocation cert:\LocalMachine\My -KeySpec Signature
+If the storage provider is other than CSR we get the error:
+Error: "Invalid provider type specified" CryptographicException when trying to load private key of certificate
+For details see https://remyblok.tweakblogs.net/blog/11803/converting-certificate-to-use-csp-storage-provider-in-stead-of-cng-storage-provider)
+
+
+(2)
+The service provider signing certificate is loaded into the certificate store using the certmgr tootl which results in 
+a certificate specifed by (ThumbPrint,Location,Store,subject)=("18d2453bedc86c761b6a2392f588eeddba324df7",LocalMachine,MY,sp.anysoft.dk)
+
+(3) 
+Get the metadata file from your identity provider idp_metadata_anysoft_dk_6a798.xml
+and store into:
+C:\inetpub\SPAnysoftDK_20200715\idp-metadata\idp_metadata_anysoft_dk_6a798
+
+(4) 
+Change web.config to:
+<SigningCertificate findValue="18d2453bedc86c761b6a2392f588eeddba324df7" storeLocation="LocalMachine" storeName="My" x509FindType="FindByThumbprint" />
+The findValue must match the thumbprint for the service provider signing certificate.
+
+And:
+    <ServiceProvider id="https://saml-sp.anysoft.dk" server="https://sp.anysoft.dk">
+      <!-- The id should appear in the AllowedAudienceUris list -->
+      <ServiceEndpoint localpath="/login.ashx" type="signon" redirectUrl="/" index="0" />
+      <ServiceEndpoint localpath="/logout.ashx" type="logout" redirectUrl="/" index="1" />
+      <ServiceEndpoint localpath="/logout.ashx" type="soaplogout" errorBehaviour="throwexception" />
+      <ServiceEndpoint localpath="/metadata.ashx" type="metadata" />
+      <md:ContactPerson contactType="administrative" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
+        <md:Company>RigsPolitiet</md:Company>
+        <md:GivenName>Torben</md:GivenName>
+        <md:SurName>Kjeldsen</md:SurName>
+        <md:EmailAddress>tk013@politi.dk</md:EmailAddress>
+        <md:TelephoneNumber>4</md:TelephoneNumber>
+      </md:ContactPerson>
+    </ServiceProvider>
+
+And:
+
+The serviceProvider.id must be listed in:
+    <AllowedAudienceUris>
+      <Audience>https://saml-sp.anysoft.dk</Audience>
+    </AllowedAudienceUris>
+
+And:
+
+The url for the ID Provider must be located in:
+    <IDPEndPoints metadata="idp-metadata">
+	  <add id="https://idp.anysoft.dk:20001/" ShaHashingAlgorithm="SHA512" default="true" />
+    </IDPEndPoints>
+
+
+(5) 
+Finally a metadata file is created by the service provider.
+This is done in call to:
+https://sp.anysoft.dk/metadata.ashx
+
+rename the downloaded xml file to:
+sp_metadata_anysoft_dk_18d24.xml
+
+--------------------------

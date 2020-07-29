@@ -1,0 +1,83 @@
+AZURE SETUP:
+
+
+--------------------------
+Identity Provider Settings:
+--------------------------
+As for idp_anysoft_sp_anysoft_setup.txt
+but with the another service provider:
+
+
+(4) <======================================= 
+The list of service provider that are allowed to authorize against the identity provider is specified by a list of files.
+Each service provider provides their own metadata file which is uploaded to:
+C:\inetpub\IdentityProviderDemo2_20200729\idp-metadata\spmetadata\
+This can also be done from the UI
+https://idp.anysoft.dk:20001/Control.aspx
+Choose file and upload.
+
+
+--------------------------
+Service Provider Settings:
+--------------------------
+(1)
+The service provider signing certificate is located in ssc_blanket_lt_politi_dk_22c8a.pfx (The 22c8a are the first five charcters of the thumbprint)
+
+(2)
+The service provider signing certificate is loaded into the certificate store using the certmgr tootl which results in 
+a certificate specifed by (ThumbPrint,Location,Store,subject)=("22c8a07e459ec8152859255d0e3006ba5a22327d",LocalMachine,MY,blanket-lt.politi.dk)
+
+(3) 
+Get the metadata file from your identity provider idp_metadata_anysoft_dk_6a798.xml
+and store into:
+C:\inetpub\SPXXXXXXXXXX\idp-metadata\idp_metadata_anysoft_dk_6a798
+
+(4) 
+Change web.config to:
+<SigningCertificate findValue="22c8a07e459ec8152859255d0e3006ba5a22327d" storeLocation="LocalMachine" storeName="My" x509FindType="FindByThumbprint" />
+The findValue must match the thumbprint for the service provider signing certificate.
+
+And:
+    <ServiceProvider id="https://saml-sp.anysoft.dk" server="https://sp.anysoft.dk">
+      <!-- The id should appear in the AllowedAudienceUris list -->
+      <ServiceEndpoint localpath="/login.ashx" type="signon" redirectUrl="/" index="0" />
+      <ServiceEndpoint localpath="/logout.ashx" type="logout" redirectUrl="/" index="1" />
+      <ServiceEndpoint localpath="/logout.ashx" type="soaplogout" errorBehaviour="throwexception" />
+      <ServiceEndpoint localpath="/metadata.ashx" type="metadata" />
+      <md:ContactPerson contactType="administrative" xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata">
+        <md:Company>RigsPolitiet</md:Company>
+        <md:GivenName>Torben</md:GivenName>
+        <md:SurName>Kjeldsen</md:SurName>
+        <md:EmailAddress>tk013@politi.dk</md:EmailAddress>
+        <md:TelephoneNumber>4</md:TelephoneNumber>
+      </md:ContactPerson>
+    </ServiceProvider>
+
+And:
+
+The serviceProvider.id must be listed in:
+    <AllowedAudienceUris>
+      <Audience>https://saml-sp.anysoft.dk</Audience>
+    </AllowedAudienceUris>
+
+And:
+
+The url for the ID Provider must be located in:
+    <IDPEndPoints metadata="idp-metadata">
+	  <add id="https://idp.anysoft.dk:20001/" ShaHashingAlgorithm="SHA512" default="true" />
+    </IDPEndPoints>
+
+
+(5) 
+Finally a metadata file is created by the service provider.
+This is done in call to:
+https://blanket-lt.politi.dk/metadata.ashx
+
+rename the downloaded xml file to:
+sp_metadata_blanket_lt_politi_dk_22c8a.xml
+
+and upload to idp in call to 
+https://idp.anysoft.dk:20001/Control.aspx
+Choose file and upload.
+
+--------------------------

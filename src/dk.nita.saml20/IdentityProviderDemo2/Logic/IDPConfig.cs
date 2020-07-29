@@ -223,16 +223,28 @@ namespace IdentityProviderDemo.Logic
         {
             if (!_configLoaded)
             {
+                log.Debug("LoadConfig()");
                 _configLoaded = true;
                 string path = Path.Combine(ConfigHelper.GetIdpDataDirectory(), _configFileName);
                 if (!File.Exists(path))
-                    return;
-
-                FileConfig conf;
-                using (FileStream fs = File.OpenRead(path))
                 {
-                    XmlSerializer xs = new XmlSerializer(typeof(FileConfig));
-                    conf = (FileConfig)xs.Deserialize(fs);
+                    log.Error($"failure, path not found:{path}");
+                    return;
+                }
+
+                FileConfig conf=null;
+
+                try
+                {
+                    using (FileStream fs = File.OpenRead(path))
+                    {
+                        XmlSerializer xs = new XmlSerializer(typeof(FileConfig));
+                        conf = (FileConfig)xs.Deserialize(fs);
+                    }
+                }
+                catch (Exception e)
+                {
+                    log.Error("failure, e:"+e);
                 }
 
                 _serverBaseUrl = conf.BaseUrl;
@@ -244,6 +256,7 @@ namespace IdentityProviderDemo.Logic
         {
             if (!string.IsNullOrEmpty(conf.certThumbPrint))
             {
+
                 _storeLocation = (StoreLocation)Enum.Parse(typeof(StoreLocation), conf.certLocation);
                 _storeName = (StoreName)Enum.Parse(typeof(StoreName), conf.certStore);
 
@@ -252,12 +265,35 @@ namespace IdentityProviderDemo.Logic
 
                 store.Open(OpenFlags.ReadOnly);
 
-                log.Debug($"certThumbPrint={conf.certThumbPrint}");
-                X509Certificate2Collection coll = store.Certificates.Find(X509FindType.FindByThumbprint, conf.certThumbPrint, true);
+                log.Debug($"cert.ThumbPrint={conf.certThumbPrint}");
+
+                X509Certificate2Collection coll;
+                try
+                {
+                    coll = store.Certificates.Find(X509FindType.FindByThumbprint, conf.certThumbPrint, true);
+                    if(coll==null)
+                    {
+                        log.Error($"Certificates::FindByThumbprint failed");
+                        return;
+                    }
+                }
+                catch(Exception e)
+                {
+                    log.Error("e:"+e);
+                    throw;
+                }
                 if (coll.Count == 1)
                 {
                     _idpCertificate = coll[0];
-                    log.Debug("found!");
+                    log.Debug("success, idp cert found");
+                }
+                else if (coll.Count > 1)
+                {
+                    log.Debug("failure, more than one certificate for thumbprint");
+                }
+                else
+                {
+                    log.Debug("failure, idp cert NOT found for thumbprint");
                 }
             }
         }

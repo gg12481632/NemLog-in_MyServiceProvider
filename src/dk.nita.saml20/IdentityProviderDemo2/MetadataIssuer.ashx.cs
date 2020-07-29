@@ -79,10 +79,11 @@ namespace IdentityProviderDemo
                 log.Debug($"before call to cert.PrivateKey, Thumbprint={cert.Thumbprint}");
                 var pkey = cert.PrivateKey;
                 log.Debug("done");
-                log.Debug($"testing pkey==null={pkey == null}");
+                log.Debug($"testing (pkey==null)={pkey == null}");
 
                 log.Debug($"before call to SignMetaData, Thumbprint={cert.Thumbprint}");
                 signatureProvider.SignMetaData(doc, id, cert);
+                log.Debug($"done");
             }
             catch(Exception e)
             {

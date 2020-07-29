@@ -141,7 +141,7 @@ namespace IdentityProviderDemo
             // It is not possible to select a certificate without private key in the UI, but just to be on the safe side.
             if (!cert.HasPrivateKey)
             {
-                WriteWarning("The selected certificate does not contain a private key.");
+                WriteWarning("The selected certificate subject={cert.Subject} does not contain a private key.");
                 return false;
             }
 
@@ -152,7 +152,8 @@ namespace IdentityProviderDemo
             }
             catch (CryptographicException)
             {
-                WriteWarning("The private key of the certificate can not be accessed. Make sure that the IIS user has read access to the certificate.");
+                
+                WriteWarning($"The private key of the certificate subject={cert.Subject} can not be accessed. Make sure that the IIS user has read access to the certificate.");
                 return false;
             }
         }
